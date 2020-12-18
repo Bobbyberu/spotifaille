@@ -21,3 +21,6 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# properties file
+src/properties.js
