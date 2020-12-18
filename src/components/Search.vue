@@ -80,7 +80,6 @@ export default {
   },
   created: async function() {
     const store = this.$store;
-    console.log(this.$properties.url);
 
     // wait to get access token before any call to spotify api
     await ky
@@ -100,24 +99,39 @@ export default {
       if (searchTerm) {
         this.spotify.setAccessToken(this.$store.state.access_token);
         this.tracks = new Promise((resolve) => {
-          this.spotify.searchTracks(searchTerm).then((res) => {
-            let tracklist = res.tracks.items;
-            let tracks = [];
-            for (let i in tracklist) {
-              let name =
-                tracklist[i].name.length > 30
-                  ? tracklist[i].name.substring(0, 30).concat("...")
-                  : tracklist[i].name;
-              tracks.push({
-                name: name,
-                fullname: tracklist[i].name,
-                image: this.getAlbumFirstImageRef(tracklist[i].album),
-                artists: this.getAllArtists(tracklist[i].artists),
-                uri: tracklist[i].uri,
-              });
-            }
-            resolve(tracks);
-          });
+          this.spotify
+            .searchTracks(searchTerm)
+            .then((res) => {
+              let tracklist = res.tracks.items;
+              let tracks = [];
+              for (let i in tracklist) {
+                let name =
+                  tracklist[i].name.length > 30
+                    ? tracklist[i].name.substring(0, 30).concat("...")
+                    : tracklist[i].name;
+                tracks.push({
+                  name: name,
+                  fullname: tracklist[i].name,
+                  image: this.getAlbumFirstImageRef(tracklist[i].album),
+                  artists: this.getAllArtists(tracklist[i].artists),
+                  uri: tracklist[i].uri,
+                });
+              }
+              resolve(tracks);
+            })
+            .catch((err) => {
+              console.log("err");
+              console.log(err);
+              if (err.status === 401) {
+                this.snackbarText =
+                  "J'suis plus co à Spotify. Demande à Aubin. C'est relou";
+                this.showSnackbar = true;
+              } else {
+                this.snackbarText =
+                  "J'ai pas réussi à trouver les sons mon reuf, il y a une couille";
+                this.showSnackbar = true;
+              }
+            });
         });
       }
     },
